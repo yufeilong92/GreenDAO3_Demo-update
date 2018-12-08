@@ -1,21 +1,22 @@
 /*
-******************************* Copyright (c)*********************************\
-**
-**                 (c) Copyright 2015, 蒋朋, china, qd. sd
-**                          All Rights Reserved
-**
-**                           By(青岛)
-**                         
-**-----------------------------------版本信息------------------------------------
-** 版    本: V0.1
-**
-**------------------------------------------------------------------------------
-********************************End of Head************************************\
-*/
+ ******************************* Copyright (c)*********************************\
+ **
+ **                 (c) Copyright 2015, 蒋朋, china, qd. sd
+ **                          All Rights Reserved
+ **
+ **                           By(青岛)
+ **
+ **-----------------------------------版本信息------------------------------------
+ ** 版    本: V0.1
+ **
+ **------------------------------------------------------------------------------
+ ********************************End of Head************************************\
+ */
 
 package com.inst.greendao3_demo.db;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 
 
 import com.inst.greendao3_demo.app.DatabaseContext;
@@ -23,6 +24,8 @@ import com.inst.greendao3_demo.dao.DaoMaster;
 import com.inst.greendao3_demo.dao.DaoSession;
 
 import org.greenrobot.greendao.query.QueryBuilder;
+
+import java.io.File;
 
 /**
  * 文 件 名: DbCore
@@ -42,8 +45,10 @@ public class DbCore {
 
     private static Context mContext;
     private static String DB_NAME;
+    private static SharedPreferences sp;
 
-    public static void init(Context context) {
+    public static void init(Context context, SharedPreferences edit) {
+        sp = edit;
         init(context, DEFAULT_DB_NAME);
     }
 
@@ -60,8 +65,25 @@ public class DbCore {
             //此处不可用 DaoMaster.DevOpenHelper, 那是开发辅助类，我们要自定义一个，方便升级
             DatabaseContext context = new DatabaseContext(mContext);
             DaoMaster.OpenHelper helper = new MyOpenHelper(context, DB_NAME);
-            daoMaster = new DaoMaster(helper.getEncryptedReadableDb("123"));
-//            daoMaster = new DaoMaster(helper.getWritableDatabase());
+            if (sp != null && sp.getString("delete", "-1").equals("delete")) {
+                if (sp.getString("do", "do").equals("no")) {
+                    String pathname = android.os.Environment.getExternalStorageDirectory().getAbsolutePath()
+                            + File.separator + "a/databases/";
+                    File file = new File(pathname);
+                    if (file.isFile()) {
+                        file.delete();
+                    } else if (file.isDirectory()) {
+                        File[] files = file.listFiles();
+                        for (int i = 0; i < files.length; i++) {
+                            files[i].delete();
+                        }
+                    }
+                    sp.edit().putString("do", "do").commit();
+                }
+                daoMaster = new DaoMaster(helper.getEncryptedReadableDb("123"));
+            } else {
+                daoMaster = new DaoMaster(helper.getWritableDatabase());
+            }
         }
         return daoMaster;
     }
@@ -76,7 +98,7 @@ public class DbCore {
         return daoSession;
     }
 
-    public static void enableQueryBuilderLog(){
+    public static void enableQueryBuilderLog() {
         QueryBuilder.LOG_SQL = true;
         QueryBuilder.LOG_VALUES = true;
     }

@@ -1,5 +1,6 @@
 package com.inst.greendao3_demo.ui;
 
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -124,6 +125,17 @@ public class MainActivity extends AppCompatActivity {
 
                 //保存到数据库s
                 mHelper.save(stu);
+                SharedPreferences sp = getSharedPreferences("sp", MODE_PRIVATE);
+                if (sp.getString("delete","-1").equals("delete")) {
+                    sp.edit().putString("do","do").commit()
+                    ;
+                    return;
+                } else {
+                    SharedPreferences.Editor edit = sp.edit();
+                    edit.putString("delete","delete");
+                    edit.putString("do","no");
+                    edit.commit();
+                }
                 break;
             case R.id.bt_minus:
                 //查询所有数据
@@ -148,6 +160,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 防多次点击的吐司
+     *
      * @param msg
      */
     public void showToast(String msg) {

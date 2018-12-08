@@ -44,6 +44,7 @@
 package com.inst.greendao3_demo.app;
 
 import android.app.Application;
+import android.content.SharedPreferences;
 
 import com.inst.greendao3_demo.BuildConfig;
 import com.inst.greendao3_demo.db.DbCore;
@@ -67,7 +68,8 @@ public class DaoApplication extends Application {
         super.onCreate();
 
         //初始化数据库
-        DbCore.init(this);
+        SharedPreferences sp = getSharedPreferences("sp",MODE_PRIVATE);
+        DbCore.init(this, sp);
         DbCore.enableQueryBuilderLog(); //开启调试 log
 
         //log管理
